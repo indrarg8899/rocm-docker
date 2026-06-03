@@ -1,0 +1,70 @@
+version: "3.9"
+
+x-rocm-common: &rocm-common
+  devices:
+    - /dev/kfd:/dev/kfd
+    - /dev/dri:/dev/dri
+  group_add:
+    - video
+    - render
+  cap_add:
+    - SYS_PTRACE
+  security_opt:
+    - seccomp=unconfined
+  environment:
+    - ROCM_PATH=/opt/rocm
+    - HIP_VISIBLE_DEVICES=all
+    - GPU_MAX_HW_QUEUES=8
+    - HSA_ENABLE_SDMA=0
+  volumes:
+    - workspace:/workspace
+    - ./data:/workspace/data
+  restart: unless-stopped
+
+services:
+  rocm-pytorch:
+    <<: *rocm-common
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.rocm-pytorch
+    image: rocm-docker/rocm-pytorch:latest
+    container_name: rocm-pytorch
+    ports:
+      - "8888:8888"
+      - "6006:6006"
+    shm_size: "16g"
+    command: jupyter lab --port=8888 --no-browser --allow-root
+
+  rocm-onnx:
+    <<: *rocm-common
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.rocm-onnx
+    image: rocm-docker/rocm-onnx:latest
+    container_name: rocm-onnx
+    ports:
+      - "8080:8080"
+    command: python3
+
+  rocm-minimal:
+    <<: *rocm-common
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.rocm-minimal
+    image: rocm-docker/rocm-minimal:latest
+    container_name: rocm-minimal
+    command: /bin/bash
+
+  rocm-mlperf:
+    <<: *rocm-common
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.rocm-mlperf
+    image: rocm-docker/rocm-mlperf:latest
+    container_name: rocm-mlperf
+    shm_size: "32g"
+    command: /bin/bash
+
+volumes:
+  workspace:
+    driver: local

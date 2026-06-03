@@ -1,0 +1,63 @@
+# ROCm 6.3 Configuration
+rocm:
+  version: "6.3"
+  ubuntu_version: "22.04"
+
+images:
+  rocm-pytorch:
+    dockerfile: dockerfiles/Dockerfile.rocm-pytorch
+    build_args:
+      ROCM_VERSION: "6.3"
+      UBUNTU_VERSION: "22.04"
+      TORCH_VERSION: "2.3.0"
+      TORCHVISION_VERSION: "0.18.0"
+      TORCHAUDIO_VERSION: "2.3.0"
+    tags:
+      - "latest"
+      - "rocm6.3-torch2.3"
+    ports:
+      - "8888:8888"
+      - "6006:6006"
+
+  rocm-onnx:
+    dockerfile: dockerfiles/Dockerfile.rocm-onnx
+    build_args:
+      ROCM_VERSION: "6.3"
+      ONNXRT_VERSION: "1.17.0"
+    tags:
+      - "latest"
+      - "rocm6.3-onnxrt1.17"
+
+  rocm-minimal:
+    dockerfile: dockerfiles/Dockerfile.rocm-minimal
+    build_args:
+      ROCM_VERSION: "6.3"
+      UBUNTU_VERSION: "22.04"
+    tags:
+      - "latest"
+      - "rocm6.3-minimal"
+
+  rocm-mlperf:
+    dockerfile: dockerfiles/Dockerfile.rocm-mlperf
+    build_args:
+      ROCM_VERSION: "6.3"
+    tags:
+      - "latest"
+      - "rocm6.3-mlperf"
+
+gpu:
+  architectures:
+    - name: "MI300X"
+      gfx_version: "11.0.0"
+      memory: "192GB"
+    - name: "MI250X"
+      gfx_version: "9.4.0"
+      memory: "128GB"
+    - name: "MI210"
+      gfx_version: "9.4.0"
+      memory: "64GB"
+
+  environment:
+    HIP_VISIBLE_DEVICES: "all"
+    GPU_MAX_HW_QUEUES: "8"
+    HSA_ENABLE_SDMA: "0"
